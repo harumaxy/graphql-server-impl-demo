@@ -3,6 +3,8 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
+    "start:yoga": "npx tsx src/yoga.ts",
+    "start:apollo": "bun run src/apollo.ts",
     "gen": "node-pg-migrate create -j sql",
     "up": "node-pg-migrate up",
     "down": "node-pg-migrate down",
