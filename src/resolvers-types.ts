@@ -19,6 +19,9 @@ export type Incremental<T> =
   | {
       [P in keyof T]?: P extends " $fragmentName" | "__typename" ? T[P] : never;
     };
+export type RequireFields<T, K extends keyof T> = Omit<T, K> & {
+  [P in K]-?: NonNullable<T[P]>;
+};
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: { input: string; output: string };
@@ -28,17 +31,28 @@ export type Scalars = {
   Float: { input: number; output: number };
 };
 
-export type Link = {
-  __typename?: "Link";
-  description: Scalars["String"]["output"];
-  id: Scalars["ID"]["output"];
-  url: Scalars["String"]["output"];
+export type Follow = {
+  __typename?: "Follow";
+  from_: User;
+  to_: User;
 };
 
 export type Query = {
   __typename?: "Query";
-  feed: Array<Link>;
-  info: Scalars["String"]["output"];
+  allUsers: Array<Maybe<User>>;
+  user?: Maybe<User>;
+};
+
+export type QueryUserArgs = {
+  id: Scalars["Int"]["input"];
+};
+
+export type User = {
+  __typename?: "User";
+  followees?: Maybe<Array<Maybe<User>>>;
+  followers?: Maybe<Array<Maybe<User>>>;
+  id: Scalars["Int"]["output"];
+  name: Scalars["String"]["output"];
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -152,28 +166,29 @@ export type DirectiveResolverFn<
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
   Boolean: ResolverTypeWrapper<Scalars["Boolean"]["output"]>;
-  ID: ResolverTypeWrapper<Scalars["ID"]["output"]>;
-  Link: ResolverTypeWrapper<Link>;
+  Follow: ResolverTypeWrapper<Follow>;
+  Int: ResolverTypeWrapper<Scalars["Int"]["output"]>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars["String"]["output"]>;
+  User: ResolverTypeWrapper<User>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
   Boolean: Scalars["Boolean"]["output"];
-  ID: Scalars["ID"]["output"];
-  Link: Link;
+  Follow: Follow;
+  Int: Scalars["Int"]["output"];
   Query: {};
   String: Scalars["String"]["output"];
+  User: User;
 }>;
 
-export type LinkResolvers<
+export type FollowResolvers<
   ContextType = any,
-  ParentType extends ResolversParentTypes["Link"] = ResolversParentTypes["Link"]
+  ParentType extends ResolversParentTypes["Follow"] = ResolversParentTypes["Follow"]
 > = ResolversObject<{
-  description?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
-  url?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  from_?: Resolver<ResolversTypes["User"], ParentType, ContextType>;
+  to_?: Resolver<ResolversTypes["User"], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -181,11 +196,40 @@ export type QueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["Query"] = ResolversParentTypes["Query"]
 > = ResolversObject<{
-  feed?: Resolver<Array<ResolversTypes["Link"]>, ParentType, ContextType>;
-  info?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  allUsers?: Resolver<
+    Array<Maybe<ResolversTypes["User"]>>,
+    ParentType,
+    ContextType
+  >;
+  user?: Resolver<
+    Maybe<ResolversTypes["User"]>,
+    ParentType,
+    ContextType,
+    RequireFields<QueryUserArgs, "id">
+  >;
+}>;
+
+export type UserResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes["User"] = ResolversParentTypes["User"]
+> = ResolversObject<{
+  followees?: Resolver<
+    Maybe<Array<Maybe<ResolversTypes["User"]>>>,
+    ParentType,
+    ContextType
+  >;
+  followers?: Resolver<
+    Maybe<Array<Maybe<ResolversTypes["User"]>>>,
+    ParentType,
+    ContextType
+  >;
+  id?: Resolver<ResolversTypes["Int"], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type Resolvers<ContextType = any> = ResolversObject<{
-  Link?: LinkResolvers<ContextType>;
+  Follow?: FollowResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  User?: UserResolvers<ContextType>;
 }>;
