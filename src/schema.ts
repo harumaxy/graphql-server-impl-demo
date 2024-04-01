@@ -1,21 +1,27 @@
+import { db } from "./db";
 import type { Resolvers } from "./resolvers-types";
 import * as fs from "node:fs/promises";
+import { users } from "../drizzle/schema";
+import { eq } from "drizzle-orm";
 
 export const typeDefs = await fs.readFile("./src/typeDefs.graphql", "utf-8");
 export const resolvers: Resolvers = {
   Query: {
-    info: (_, __, context, info) => {
-      console.log(info.fragments);
-      return "Hello";
+    user: async (_, args, _ctx, _info) => {
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, args.id),
+      });
+      return user ?? null;
     },
-    feed: (_, __, context, info) => {
-      console.log(info.fragments);
-      return [];
+    allUsers: async () => {
+      const users = await db.query.users.findMany();
+      return users;
     },
   },
-  Link: {
+  User: {
     id: (parent) => parent.id,
-    url: (parent) => parent.url,
-    description: (parent) => parent.description,
+    name: (parent) => {
+      return parent.name + "さん";
+    },
   },
 };
